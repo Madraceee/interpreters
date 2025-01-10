@@ -1,35 +1,40 @@
-package main
+package scanner
 
-import "strconv"
+import (
+	"strconv"
+
+	"github.com/madraceee/glox/token"
+	"github.com/madraceee/glox/utils"
+)
 
 var (
 	keywords map[string]int = map[string]int{
-		"and":    AND,
-		"class":  CLASS,
-		"else":   ELSE,
-		"false":  FALSE,
-		"fun":    FUN,
-		"for":    FOR,
-		"if":     IF,
-		"nil":    NIL,
-		"or":     OR,
-		"print":  PRINT,
-		"return": RETURN,
-		"super":  SUPER,
-		"this":   THIS,
-		"true":   TRUE,
-		"var":    VAR,
-		"while":  WHILE,
+		"and":    token.AND,
+		"class":  token.CLASS,
+		"else":   token.ELSE,
+		"false":  token.FALSE,
+		"fun":    token.FUN,
+		"for":    token.FOR,
+		"if":     token.IF,
+		"nil":    token.NIL,
+		"or":     token.OR,
+		"print":  token.PRINT,
+		"return": token.RETURN,
+		"super":  token.SUPER,
+		"this":   token.THIS,
+		"true":   token.TRUE,
+		"var":    token.VAR,
+		"while":  token.WHILE,
 	}
 )
 
 type Scanner interface {
-	scanTokens() []Token
+	ScanTokens() []token.Token
 }
 
 type Scan struct {
 	source  string
-	tokens  []Token
+	tokens  []token.Token
 	start   int
 	current int
 	line    int
@@ -44,13 +49,13 @@ func NewScanner(source string) *Scan {
 	}
 }
 
-func (s *Scan) scanTokens() []Token {
+func (s *Scan) ScanTokens() []token.Token {
 	for !s.isAtEnd() {
 		s.start = s.current
 		s.scanToken()
 	}
 
-	s.tokens = append(s.tokens, NewToken(EOF, "", Object{}, s.line))
+	s.tokens = append(s.tokens, token.NewToken(token.EOF, "", token.Object{}, s.line))
 	return s.tokens
 }
 
@@ -62,48 +67,48 @@ func (s *Scan) scanToken() {
 	c := s.advance()
 	switch c {
 	case '(':
-		s.addToken(LEFT_PARAN)
+		s.addToken(token.LEFT_PARAN)
 	case ')':
-		s.addToken(RIGHT_PARAN)
+		s.addToken(token.RIGHT_PARAN)
 	case '{':
-		s.addToken(LEFT_BRACE)
+		s.addToken(token.LEFT_BRACE)
 	case '}':
-		s.addToken(RIGHT_BRACE)
+		s.addToken(token.RIGHT_BRACE)
 	case ',':
-		s.addToken(COMMA)
+		s.addToken(token.COMMA)
 	case '.':
-		s.addToken(DOT)
+		s.addToken(token.DOT)
 	case '-':
-		s.addToken(MINUS)
+		s.addToken(token.MINUS)
 	case '+':
-		s.addToken(PLUS)
+		s.addToken(token.PLUS)
 	case ';':
-		s.addToken(SEMICOLON)
+		s.addToken(token.SEMICOLON)
 	case '*':
-		s.addToken(STAR)
+		s.addToken(token.STAR)
 	case '!':
 		if s.match('=') {
-			s.addToken(BANG_EQUAL)
+			s.addToken(token.BANG_EQUAL)
 		} else {
-			s.addToken(BANG)
+			s.addToken(token.BANG)
 		}
 	case '=':
 		if s.match('=') {
-			s.addToken(EQUAL_EQUAL)
+			s.addToken(token.EQUAL_EQUAL)
 		} else {
-			s.addToken(EQUAL)
+			s.addToken(token.EQUAL)
 		}
 	case '<':
 		if s.match('=') {
-			s.addToken(LESS_EQUAL)
+			s.addToken(token.LESS_EQUAL)
 		} else {
-			s.addToken(LESS)
+			s.addToken(token.LESS)
 		}
 	case '>':
 		if s.match('=') {
-			s.addToken(GREATER_EQUAL)
+			s.addToken(token.GREATER_EQUAL)
 		} else {
-			s.addToken(GREATER)
+			s.addToken(token.GREATER)
 		}
 	case '/':
 		if s.match('/') {
@@ -114,7 +119,7 @@ func (s *Scan) scanToken() {
 			count := 1
 			for count > 0 {
 				if s.isAtEnd() {
-					error(s.line, "Multi line comment is not closed")
+					utils.Error(s.line, "Multi line comment is not closed")
 					break
 				}
 				if s.peek() == '*' && s.peekNext() == '/' {
@@ -133,7 +138,7 @@ func (s *Scan) scanToken() {
 				s.advance()
 			}
 		} else {
-			s.addToken(SLASH)
+			s.addToken(token.SLASH)
 		}
 	case ' ', '\r', '\t':
 		break
@@ -147,7 +152,7 @@ func (s *Scan) scanToken() {
 		} else if isAlpha(c) {
 			s.identifier()
 		} else {
-			error(s.line, "Unexpected character.")
+			utils.Error(s.line, "Unexpected character.")
 		}
 	}
 }
@@ -217,9 +222,9 @@ func (s *Scan) number() {
 	}
 
 	value, _ := strconv.ParseFloat(s.source[s.start:s.current], 64)
-	s.addTokenObj(NUMBER, Object{
-		objType:     NUMBER_TYPE,
-		value_float: value,
+	s.addTokenObj(token.NUMBER, token.Object{
+		ObjType:     token.NUMBER_TYPE,
+		Value_float: value,
 	})
 }
 
@@ -231,7 +236,7 @@ func (s *Scan) identifier() {
 	value := s.source[s.start:s.current]
 	tokenType, ok := keywords[value]
 	if !ok {
-		tokenType = IDENTIFIER
+		tokenType = token.IDENTIFIER
 	}
 	s.addToken(tokenType)
 }
@@ -245,24 +250,24 @@ func (s *Scan) string() {
 	}
 
 	if s.isAtEnd() {
-		error(s.line, "Unterminated String.")
+		utils.Error(s.line, "Unterminated String.")
 		return
 	}
 
 	s.advance()
 
 	value := s.source[s.start+1 : s.current-1]
-	s.addTokenObj(STRING, Object{
-		objType:   STRING_TYPE,
-		value_str: value,
+	s.addTokenObj(token.STRING, token.Object{
+		ObjType:   token.STRING_TYPE,
+		Value_str: value,
 	})
 }
 
 func (s *Scan) addToken(tokenType int) {
-	s.addTokenObj(tokenType, Object{})
+	s.addTokenObj(tokenType, token.Object{})
 }
 
-func (s *Scan) addTokenObj(tokenType int, object Object) {
+func (s *Scan) addTokenObj(tokenType int, object token.Object) {
 	text := s.source[s.start:s.current]
-	s.tokens = append(s.tokens, NewToken(tokenType, text, object, s.line))
+	s.tokens = append(s.tokens, token.NewToken(tokenType, text, object, s.line))
 }

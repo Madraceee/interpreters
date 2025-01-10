@@ -6,14 +6,13 @@ import (
 	"io"
 	"log"
 	"os"
+
+	"github.com/madraceee/glox/scanner"
+	"github.com/madraceee/glox/utils"
 )
 
 const (
 	debug = false
-)
-
-var (
-	hadError = false
 )
 
 func dLogf(pattern string, args ...string) {
@@ -35,8 +34,8 @@ func main() {
 }
 
 func run(source string) {
-	scanner := NewScanner(source)
-	tokens := scanner.scanTokens()
+	scanner := scanner.NewScanner(source)
+	tokens := scanner.ScanTokens()
 	for _, v := range tokens {
 		fmt.Println(v)
 	}
@@ -57,7 +56,7 @@ func runFile(fileName string) {
 		os.Exit(1)
 	}
 	run(string(content))
-	if hadError {
+	if utils.HadError {
 		os.Exit(1)
 	}
 }
@@ -71,15 +70,6 @@ func runPrompt() {
 			break
 		}
 		run(text)
-		hadError = false
+		utils.HadError = false
 	}
-}
-
-func error(line int, message string) {
-	report(line, "", message)
-}
-
-func report(line int, where, message string) {
-	fmt.Printf("[Line %d] Error %s: %s\n", line, where, message)
-	hadError = true
 }

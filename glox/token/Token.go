@@ -1,4 +1,4 @@
-package main
+package token
 
 import "strconv"
 
@@ -11,16 +11,16 @@ const (
 )
 
 type Object struct {
-	objType     ObjectType
-	value_str   string
-	value_float float64
+	ObjType     ObjectType
+	Value_str   string
+	Value_float float64
 }
 
 func (o *Object) getStringValue() string {
-	if o.objType == NUMBER_TYPE {
-		return strconv.FormatFloat(o.value_float, 'f', -1, 64)
-	} else if o.objType == STRING_TYPE {
-		return o.value_str
+	if o.ObjType == NUMBER_TYPE {
+		return strconv.FormatFloat(o.Value_float, 'f', -1, 64)
+	} else if o.ObjType == STRING_TYPE {
+		return o.Value_str
 	}
 	return ""
 }
