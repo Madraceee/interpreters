@@ -59,15 +59,6 @@ import (
 		log.Fatal(err)
 	}
 
-	// // Build Base struct
-	// builder.WriteString("type  " + basename + " struct{\n")
-	// for _, _type := range types {
-	// 	split := strings.Split(_type, ":")
-	// 	classname := strings.Trim(split[0], " ")
-	// 	builder.WriteString("\t*" + classname + "\n")
-	// }
-	// builder.WriteString("}\n\n")
-
 	// Add interface for all rules to implement
 	// Allows all rules to return a  string of what they hold
 	builder.WriteString("\ntype  " + basename + " interface{\n")
