@@ -16,7 +16,7 @@ type Object struct {
 	Value_float float64
 }
 
-func (o *Object) getStringValue() string {
+func (o *Object) GetStringValue() string {
 	if o.ObjType == NUMBER_TYPE {
 		return strconv.FormatFloat(o.Value_float, 'f', -1, 64)
 	} else if o.ObjType == STRING_TYPE {
@@ -42,5 +42,5 @@ func NewToken(tokenType int, lexeme string, literal Object, line int) Token {
 }
 
 func (t Token) String() string {
-	return getTokenType(t.tokenType) + " " + t.lexeme + " " + t.literal.getStringValue()
+	return getTokenType(t.tokenType) + " " + t.lexeme + " " + t.literal.GetStringValue()
 }
