@@ -7,7 +7,7 @@ import (
 	"github.com/madraceee/glox/token"
 )
 
-func main() {
+func astPrinter() {
 	expr := parser.NewBinary(
 		parser.NewUnary(
 			token.NewToken(token.MINUS, "-", token.Object{}, 1),
