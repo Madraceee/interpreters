@@ -1,16 +1,29 @@
 package utils
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/madraceee/glox/token"
+)
 
 var (
 	HadError = false
 )
 
 func Error(line int, message string) {
-	Eeport(line, "", message)
+	Ereport(line, "", message)
 }
 
-func Eeport(line int, where, message string) {
+func TError(_token token.Token, message string) {
+	if _token.TokenType == token.EOF {
+		Ereport(_token.Line, "at end", message)
+	} else {
+		Ereport(_token.Line, "at '"+_token.Lexeme+"'", message)
+	}
+
+}
+
+func Ereport(line int, where, message string) {
 	fmt.Printf("[Line %d] Error %s: %s\n", line, where, message)
 	HadError = true
 }

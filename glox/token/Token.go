@@ -26,21 +26,21 @@ func (o *Object) GetStringValue() string {
 }
 
 type Token struct {
-	tokenType int
-	lexeme    string
-	literal   Object
-	line      int
+	TokenType TokenType
+	Lexeme    string
+	Literal   Object
+	Line      int
 }
 
-func NewToken(tokenType int, lexeme string, literal Object, line int) Token {
+func NewToken(tokenType TokenType, lexeme string, literal Object, line int) Token {
 	return Token{
-		tokenType: tokenType,
-		lexeme:    lexeme,
-		literal:   literal,
-		line:      line,
+		TokenType: tokenType,
+		Lexeme:    lexeme,
+		Literal:   literal,
+		Line:      line,
 	}
 }
 
 func (t Token) String() string {
-	return getTokenType(t.tokenType) + " " + t.lexeme + " " + t.literal.GetStringValue()
+	return GetTokenType(t.TokenType) + " " + t.Lexeme + " " + t.Literal.GetStringValue()
 }

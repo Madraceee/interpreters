@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	keywords map[string]int = map[string]int{
+	keywords map[string]token.TokenType = map[string]token.TokenType{
 		"and":    token.AND,
 		"class":  token.CLASS,
 		"else":   token.ELSE,
@@ -157,7 +157,7 @@ func (s *Scan) scanToken() {
 	}
 }
 
-// advance Return the character at current position and advance to next position
+// advance Returns the character at current position and advances to next position
 func (s *Scan) advance() rune {
 	defer func() { s.current += 1 }()
 	return rune(s.source[s.current])
@@ -263,11 +263,11 @@ func (s *Scan) string() {
 	})
 }
 
-func (s *Scan) addToken(tokenType int) {
+func (s *Scan) addToken(tokenType token.TokenType) {
 	s.addTokenObj(tokenType, token.Object{})
 }
 
-func (s *Scan) addTokenObj(tokenType int, object token.Object) {
+func (s *Scan) addTokenObj(tokenType token.TokenType, object token.Object) {
 	text := s.source[s.start:s.current]
 	s.tokens = append(s.tokens, token.NewToken(tokenType, text, object, s.line))
 }

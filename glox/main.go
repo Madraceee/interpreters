@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/madraceee/glox/parser"
 	"github.com/madraceee/glox/scanner"
 	"github.com/madraceee/glox/utils"
 )
@@ -34,11 +35,20 @@ func main() {
 }
 
 func run(source string) {
+	fmt.Println("----Scanning----")
 	scanner := scanner.NewScanner(source)
 	tokens := scanner.ScanTokens()
 	for _, v := range tokens {
 		fmt.Println(v)
 	}
+
+	fmt.Println("----Parsing----")
+	parser := parser.NewParser(tokens)
+	expression := parser.Parse()
+	if utils.HadError {
+		return
+	}
+	fmt.Println(expression.Visit())
 }
 
 func runFile(fileName string) {

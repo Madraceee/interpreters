@@ -1,8 +1,10 @@
 package token
 
+type TokenType int
+
 const (
 	// Single-Charecter tokens
-	LEFT_PARAN = iota
+	LEFT_PARAN TokenType = iota
 	RIGHT_PARAN
 	LEFT_BRACE
 	RIGHT_BRACE
@@ -50,7 +52,7 @@ const (
 	EOF
 )
 
-func getTokenType(tokenType int) string {
+func GetTokenType(tokenType TokenType) string {
 	switch tokenType {
 	case LEFT_PARAN:
 		return "LEFT_PARAN"
