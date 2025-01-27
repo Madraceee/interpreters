@@ -62,12 +62,14 @@ import (
 	// Add interface for all rules to implement
 	// Allows all rules to return a  string of what they hold
 	builder.WriteString("\ntype  " + basename + " interface{\n")
-	builder.WriteString("\tVisit() string\n}\n\n")
+	builder.WriteString("\tVisit(VisitExpr) (interface{}, error)\n}\n\n")
 
 	_, err = file.WriteString(builder.String())
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	defineToBeImplementedInterface(file, basename, types)
 
 	for _, _type := range types {
 		split := strings.Split(_type, ":")
@@ -114,7 +116,7 @@ func defineTypes(file *os.File, basename, classname, fieldlist string) {
 		}
 		builder.WriteString(field)
 	}
-	builder.WriteString(")" + " *" + classname + "{\n")
+	builder.WriteString(")" + basename + "{\n")
 	builder.WriteString("\t return &" + classname + "{\n")
 	for _, field := range fields {
 		builder.WriteString(field + " : " + field + ",\n")
@@ -123,6 +125,36 @@ func defineTypes(file *os.File, basename, classname, fieldlist string) {
 	builder.WriteString("}\n")
 
 	_, err = file.WriteString(builder.String())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defineVisitFunc(file, basename, classname)
+}
+
+func defineVisitFunc(file *os.File, basename, classname string) {
+	builder := strings.Builder{}
+	builder.WriteString("\nfunc (expr *" + classname + ") Visit(visitor Visit" + basename + ") (interface{}, error){\n")
+	builder.WriteString("\treturn visitor.Visit" + classname + basename + "(expr)\n")
+	builder.WriteString("}\n")
+
+	_, err := file.WriteString(builder.String())
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func defineToBeImplementedInterface(file *os.File, basename string, types []string) {
+	builder := strings.Builder{}
+	builder.WriteString("\ntype  Visit" + basename + " interface{\n")
+	for _, _type := range types {
+		split := strings.Split(_type, ":")
+		classname := strings.Trim(split[0], " ")
+		builder.WriteString("\tVisit" + classname + basename + "(*" + classname + ") (interface{}, error)\n")
+	}
+	builder.WriteString("}\n\n")
+
+	_, err := file.WriteString(builder.String())
 	if err != nil {
 		log.Fatal(err)
 	}

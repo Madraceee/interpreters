@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/madraceee/glox/parser"
 	"github.com/madraceee/glox/token"
 )
@@ -25,5 +23,6 @@ func astPrinter() {
 		),
 	)
 
-	fmt.Println(expr.Visit())
+	ap := parser.NewAstPrinter()
+	ap.Print(expr)
 }

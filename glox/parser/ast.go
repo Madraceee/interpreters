@@ -5,7 +5,14 @@ import (
 )
 
 type Expr interface {
-	Visit() string
+	Visit(VisitExpr) (interface{}, error)
+}
+
+type VisitExpr interface {
+	VisitBinaryExpr(*Binary) (interface{}, error)
+	VisitGroupingExpr(*Grouping) (interface{}, error)
+	VisitLiteralExpr(*Literal) (interface{}, error)
+	VisitUnaryExpr(*Unary) (interface{}, error)
 }
 
 type Binary struct {
@@ -14,7 +21,7 @@ type Binary struct {
 	right    Expr
 }
 
-func NewBinary(left Expr, operator token.Token, right Expr) *Binary {
+func NewBinary(left Expr, operator token.Token, right Expr) Expr {
 	return &Binary{
 		left:     left,
 		operator: operator,
@@ -22,24 +29,36 @@ func NewBinary(left Expr, operator token.Token, right Expr) *Binary {
 	}
 }
 
+func (expr *Binary) Visit(visitor VisitExpr) (interface{}, error) {
+	return visitor.VisitBinaryExpr(expr)
+}
+
 type Grouping struct {
 	expression Expr
 }
 
-func NewGrouping(expression Expr) *Grouping {
+func NewGrouping(expression Expr) Expr {
 	return &Grouping{
 		expression: expression,
 	}
+}
+
+func (expr *Grouping) Visit(visitor VisitExpr) (interface{}, error) {
+	return visitor.VisitGroupingExpr(expr)
 }
 
 type Literal struct {
 	value token.Object
 }
 
-func NewLiteral(value token.Object) *Literal {
+func NewLiteral(value token.Object) Expr {
 	return &Literal{
 		value: value,
 	}
+}
+
+func (expr *Literal) Visit(visitor VisitExpr) (interface{}, error) {
+	return visitor.VisitLiteralExpr(expr)
 }
 
 type Unary struct {
@@ -47,9 +66,13 @@ type Unary struct {
 	right    Expr
 }
 
-func NewUnary(operator token.Token, right Expr) *Unary {
+func NewUnary(operator token.Token, right Expr) Expr {
 	return &Unary{
 		operator: operator,
 		right:    right,
 	}
+}
+
+func (expr *Unary) Visit(visitor VisitExpr) (interface{}, error) {
+	return visitor.VisitUnaryExpr(expr)
 }

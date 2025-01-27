@@ -1,33 +1,50 @@
 package parser
 
 import (
+	"fmt"
 	"strings"
 )
 
-func (b *Binary) Visit() string {
-	return parenthesize(b.operator.String(), b.left, b.right)
+type AstPrinter struct{}
+
+func NewAstPrinter() *AstPrinter {
+	return &AstPrinter{}
 }
 
-func (g *Grouping) Visit() string {
-	return parenthesize("group", g.expression)
+func (ap *AstPrinter) Print(e Expr) {
+	val, err := e.Visit(ap)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(val.(string))
 }
 
-func (l *Literal) Visit() string {
-	return l.value.GetStringValue()
+func (ap *AstPrinter) VisitBinaryExpr(b *Binary) (interface{}, error) {
+	return ap.parenthesize(b.operator.String(), b.left, b.right)
 }
 
-func (u *Unary) Visit() string {
-	return parenthesize(u.operator.String(), u.right)
+func (ap *AstPrinter) VisitGroupingExpr(g *Grouping) (interface{}, error) {
+	return ap.parenthesize("group", g.expression)
 }
 
-func parenthesize(name string, exprs ...Expr) string {
+func (ap *AstPrinter) VisitLiteralExpr(l *Literal) (interface{}, error) {
+	return l.value.GetStringValue(), nil
+}
+
+func (ap *AstPrinter) VisitUnaryExpr(u *Unary) (interface{}, error) {
+	return ap.parenthesize(u.operator.String(), u.right)
+}
+
+func (ap *AstPrinter) parenthesize(name string, exprs ...Expr) (string, error) {
 	builder := strings.Builder{}
 
 	builder.WriteString("(" + name)
 	for _, expr := range exprs {
-		builder.WriteString(" " + expr.Visit())
+		val, _ := expr.Visit(ap)
+		builder.WriteString(" " + val.(string))
 	}
 	builder.WriteString(")")
 
-	return builder.String()
+	return builder.String(), nil
 }
