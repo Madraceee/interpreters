@@ -98,10 +98,7 @@ func defineTypes(file *os.File, basename, classname, fieldlist string) {
 		log.Fatal(err)
 	}
 	for _, field := range fieldsWithType {
-		_, err = builder.WriteString(field + "\n")
-		if err != nil {
-			log.Fatal(err)
-		}
+		builder.WriteString(toUpperFirstChar(field) + "\n")
 	}
 	_, err = builder.WriteString("\n}\n")
 	if err != nil {
@@ -119,7 +116,7 @@ func defineTypes(file *os.File, basename, classname, fieldlist string) {
 	builder.WriteString(")" + basename + "{\n")
 	builder.WriteString("\t return &" + classname + "{\n")
 	for _, field := range fields {
-		builder.WriteString(field + " : " + field + ",\n")
+		builder.WriteString(toUpperFirstChar(field) + " : " + field + ",\n")
 	}
 	builder.WriteString("\t}\n")
 	builder.WriteString("}\n")
@@ -165,4 +162,13 @@ func replaceOtherPackageTypes(otherPackageType string) string {
 		return packageName + "." + otherPackageType
 	}
 	return otherPackageType
+}
+
+func toUpperFirstChar(str string) string {
+	runes := []rune(str)
+	if runes[0] >= 97 {
+		runes[0] = runes[0] - 32
+	}
+
+	return string(runes)
 }

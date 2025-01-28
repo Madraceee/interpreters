@@ -16,16 +16,16 @@ type VisitExpr interface {
 }
 
 type Binary struct {
-	left     Expr
-	operator token.Token
-	right    Expr
+	Left     Expr
+	Operator token.Token
+	Right    Expr
 }
 
 func NewBinary(left Expr, operator token.Token, right Expr) Expr {
 	return &Binary{
-		left:     left,
-		operator: operator,
-		right:    right,
+		Left:     left,
+		Operator: operator,
+		Right:    right,
 	}
 }
 
@@ -34,12 +34,12 @@ func (expr *Binary) Visit(visitor VisitExpr) (interface{}, error) {
 }
 
 type Grouping struct {
-	expression Expr
+	Expression Expr
 }
 
 func NewGrouping(expression Expr) Expr {
 	return &Grouping{
-		expression: expression,
+		Expression: expression,
 	}
 }
 
@@ -48,12 +48,12 @@ func (expr *Grouping) Visit(visitor VisitExpr) (interface{}, error) {
 }
 
 type Literal struct {
-	value token.Object
+	Value token.Object
 }
 
 func NewLiteral(value token.Object) Expr {
 	return &Literal{
-		value: value,
+		Value: value,
 	}
 }
 
@@ -62,14 +62,14 @@ func (expr *Literal) Visit(visitor VisitExpr) (interface{}, error) {
 }
 
 type Unary struct {
-	operator token.Token
-	right    Expr
+	Operator token.Token
+	Right    Expr
 }
 
 func NewUnary(operator token.Token, right Expr) Expr {
 	return &Unary{
-		operator: operator,
-		right:    right,
+		Operator: operator,
+		Right:    right,
 	}
 }
 

@@ -21,19 +21,19 @@ func (ap *AstPrinter) Print(e Expr) {
 }
 
 func (ap *AstPrinter) VisitBinaryExpr(b *Binary) (interface{}, error) {
-	return ap.parenthesize(b.operator.String(), b.left, b.right)
+	return ap.parenthesize(b.Operator.String(), b.Left, b.Right)
 }
 
 func (ap *AstPrinter) VisitGroupingExpr(g *Grouping) (interface{}, error) {
-	return ap.parenthesize("group", g.expression)
+	return ap.parenthesize("group", g.Expression)
 }
 
 func (ap *AstPrinter) VisitLiteralExpr(l *Literal) (interface{}, error) {
-	return l.value.GetStringValue(), nil
+	return l.Value.GetStringValue(), nil
 }
 
 func (ap *AstPrinter) VisitUnaryExpr(u *Unary) (interface{}, error) {
-	return ap.parenthesize(u.operator.String(), u.right)
+	return ap.parenthesize(u.Operator.String(), u.Right)
 }
 
 func (ap *AstPrinter) parenthesize(name string, exprs ...Expr) (string, error) {
