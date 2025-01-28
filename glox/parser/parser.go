@@ -116,14 +116,14 @@ func (p *Parser) unary() (Expr, error) {
 func (p *Parser) primary() (Expr, error) {
 	if p.match(token.FALSE) {
 		return NewLiteral(token.Object{
-			ObjType:   token.STRING_TYPE,
-			Value_str: "false",
+			ObjType:    token.BOOL_TYPE,
+			Value_bool: false,
 		}), nil
 	}
 	if p.match(token.TRUE) {
 		return NewLiteral(token.Object{
-			ObjType:   token.STRING_TYPE,
-			Value_str: "true",
+			ObjType:    token.BOOL_TYPE,
+			Value_bool: true,
 		}), nil
 	}
 	if p.match(token.NIL) {

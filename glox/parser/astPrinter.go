@@ -3,6 +3,8 @@ package parser
 import (
 	"fmt"
 	"strings"
+
+	"github.com/madraceee/glox/token"
 )
 
 type AstPrinter struct{}
@@ -29,7 +31,7 @@ func (ap *AstPrinter) VisitGroupingExpr(g *Grouping) (interface{}, error) {
 }
 
 func (ap *AstPrinter) VisitLiteralExpr(l *Literal) (interface{}, error) {
-	return l.Value.GetStringValue(), nil
+	return token.GetStringValue(l.Value), nil
 }
 
 func (ap *AstPrinter) VisitUnaryExpr(u *Unary) (interface{}, error) {
