@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	HadError = false
+	HadError        = false
+	HadRunTimeError = false
 )
 
 func Error(line int, message string) {
