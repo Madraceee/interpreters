@@ -15,9 +15,14 @@ import (
 func main() {
 	args := os.Args
 	utils.Debug = false
-	if len(args) > 2 {
-		fmt.Printf("%s\n", "Usage: glox [script]")
+	if len(args) > 3 {
+		fmt.Printf("%s\n", "Usage: glox [debug] [script]")
 		os.Exit(1)
+	} else if len(args) == 3 {
+		if args[1] == "debug" {
+			utils.Debug = true
+		}
+		runFile(args[2])
 	} else if len(args) == 2 {
 		runFile(args[1])
 	} else {
@@ -40,7 +45,7 @@ func run(source string) {
 		return
 	}
 
-	utils.DPrintf("%s", "----Interpreter----")
+	utils.DPrintf("%s\n", "----Interpreter----")
 	gloxInterpreter := interpreter.NewInterpreter()
 	gloxInterpreter.Interpret(expression)
 }
@@ -74,6 +79,7 @@ func runPrompt() {
 			break
 		}
 		run(text)
+		fmt.Println("")
 		utils.HadError = false
 	}
 }
