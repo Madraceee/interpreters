@@ -3,8 +3,8 @@ package parser
 import (
 	"errors"
 
-	"github.com/madraceee/glox/token"
-	"github.com/madraceee/glox/utils"
+	"github.com/madraceee/interpreters/glox/token"
+	"github.com/madraceee/interpreters/glox/utils"
 )
 
 type Parser struct {

@@ -3,8 +3,8 @@ package scanner
 import (
 	"strconv"
 
-	"github.com/madraceee/glox/token"
-	"github.com/madraceee/glox/utils"
+	"github.com/madraceee/interpreters/glox/token"
+	"github.com/madraceee/interpreters/glox/utils"
 )
 
 var (

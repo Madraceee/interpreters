@@ -6,10 +6,10 @@ import (
 	"io"
 	"os"
 
-	"github.com/madraceee/glox/interpreter"
-	"github.com/madraceee/glox/parser"
-	"github.com/madraceee/glox/scanner"
-	"github.com/madraceee/glox/utils"
+	"github.com/madraceee/interpreters/glox/interpreter"
+	"github.com/madraceee/interpreters/glox/parser"
+	"github.com/madraceee/interpreters/glox/scanner"
+	"github.com/madraceee/interpreters/glox/utils"
 )
 
 func main() {
@@ -39,8 +39,12 @@ func run(source string) {
 	}
 
 	utils.DPrintf("%s\n", "----Parsing----")
+	ap := parser.NewAstPrinter()
 	parser := parser.NewParser(tokens)
 	expression := parser.Parse()
+	if utils.Debug {
+		ap.Print(expression)
+	}
 	if utils.HadError {
 		return
 	}

@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/madraceee/glox/token"
+	"github.com/madraceee/interpreters/glox/token"
 )
 
 type Expr interface {

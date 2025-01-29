@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/madraceee/glox/parser"
-	"github.com/madraceee/glox/token"
+	"github.com/madraceee/interpreters/glox/parser"
+	"github.com/madraceee/interpreters/glox/token"
 )
 
 func astPrinter() {

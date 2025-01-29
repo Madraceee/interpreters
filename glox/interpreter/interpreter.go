@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/madraceee/glox/parser"
-	"github.com/madraceee/glox/token"
-	"github.com/madraceee/glox/utils"
+	"github.com/madraceee/interpreters/glox/parser"
+	"github.com/madraceee/interpreters/glox/token"
+	"github.com/madraceee/interpreters/glox/utils"
 )
 
 type Interpreter struct {
@@ -168,7 +168,10 @@ func (i *Interpreter) VisitBinaryExpr(b *parser.Binary) (interface{}, error) {
 		}, nil
 	case token.BANG_EQUAL:
 		val, err := i.isEqual(b.Left, b.Right)
-		return !val.(bool), err
+		return token.Object{
+			ObjType:    val.(token.Object).ObjType,
+			Value_bool: !val.(token.Object).Value_bool,
+		}, err
 	case token.EQUAL_EQUAL:
 		return i.isEqual(b.Left, b.Right)
 	}

@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 
-	"github.com/madraceee/glox/token"
+	"github.com/madraceee/interpreters/glox/token"
 )
 
 var (

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/madraceee/glox/token"
+	"github.com/madraceee/interpreters/glox/token"
 )
 
 type AstPrinter struct{}
