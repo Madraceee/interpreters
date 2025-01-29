@@ -75,7 +75,7 @@ func (p *Parser) term() (Expr, error) {
 
 	for p.match(token.MINUS, token.PLUS) {
 		operator := p.previous()
-		right, err := p.unary()
+		right, err := p.factor()
 		if err != nil {
 			return nil, err
 		}
