@@ -5,4 +5,4 @@ build: clean
 run:	build
 	@./bin/glox
 generateAst:
-	@go build  -o ./parser/tool/ ./parser/tool/ && ./parser/tool/tool && go fmt  ./parser/ast.go
+	@go build  -o ./parser/tool/ ./parser/tool/ && ./parser/tool/tool && go fmt  ./parser/expr.go ./parser/stmt.go

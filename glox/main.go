@@ -39,19 +39,19 @@ func run(source string) {
 	}
 
 	utils.DPrintf("%s\n", "----Parsing----")
-	ap := parser.NewAstPrinter()
+	// ap := parser.NewAstPrinter()
 	parser := parser.NewParser(tokens)
-	expression := parser.Parse()
-	if utils.Debug {
-		ap.Print(expression)
-	}
+	statements := parser.Parse()
+	// if utils.Debug {
+	// 	ap.Print(statements)
+	// }
 	if utils.HadError {
 		return
 	}
 
 	utils.DPrintf("%s\n", "----Interpreter----")
 	gloxInterpreter := interpreter.NewInterpreter()
-	gloxInterpreter.Interpret(expression)
+	gloxInterpreter.Interpret(statements)
 }
 
 func runFile(fileName string) {

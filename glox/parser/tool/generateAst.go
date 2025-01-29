@@ -19,7 +19,39 @@ var (
 )
 
 func main() {
-	filename := "ast.go"
+	generateExpr()
+	generateStmt()
+}
+
+func generateStmt() {
+	filename := "stmt.go"
+	if len(os.Args) > 1 {
+		filename = os.Args[1]
+	}
+
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+	paths := strings.Split(dir, "/")
+	parserPath := strings.Join(paths[:len(paths)-1], "/")
+
+	// Remove file if present and make a new one
+	_ = os.Remove(parserPath + "/" + filename)
+	file, err := os.OpenFile(parserPath+"/"+filename, os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	defineAst(file, "Stmt", []string{
+		"Expression : Expr expression",
+		"Print : Expr expression",
+		"Var : Token name, Expr initializer",
+	})
+}
+
+func generateExpr() {
+	filename := "expr.go"
 	if len(os.Args) > 1 {
 		filename = os.Args[1]
 	}
@@ -43,8 +75,8 @@ func main() {
 		"Grouping : Expr expression",
 		"Literal : Object value",
 		"Unary : Token operator, Expr right",
+		"Variable : Token name",
 	})
-
 }
 
 func defineAst(file *os.File, basename string, types []string) {
@@ -52,9 +84,8 @@ func defineAst(file *os.File, basename string, types []string) {
 	_, err := builder.WriteString(`
 package parser
 import (
-	"github.com/madraceee/glox/token"
-)
-		`)
+	"github.com/madraceee/interpreters/glox/token"
+)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,7 +93,7 @@ import (
 	// Add interface for all rules to implement
 	// Allows all rules to return a  string of what they hold
 	builder.WriteString("\ntype  " + basename + " interface{\n")
-	builder.WriteString("\tVisit(VisitExpr) (interface{}, error)\n}\n\n")
+	builder.WriteString("\tVisit(Visit" + basename + ") (interface{}, error)\n}\n\n")
 
 	_, err = file.WriteString(builder.String())
 	if err != nil {

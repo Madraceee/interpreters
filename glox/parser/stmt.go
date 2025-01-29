@@ -1,0 +1,59 @@
+package parser
+
+import (
+	"github.com/madraceee/interpreters/glox/token"
+)
+
+type Stmt interface {
+	Visit(VisitStmt) (interface{}, error)
+}
+
+type VisitStmt interface {
+	VisitExpressionStmt(*Expression) (interface{}, error)
+	VisitPrintStmt(*Print) (interface{}, error)
+	VisitVarStmt(*Var) (interface{}, error)
+}
+
+type Expression struct {
+	Expression Expr
+}
+
+func NewExpression(expression Expr) Stmt {
+	return &Expression{
+		Expression: expression,
+	}
+}
+
+func (expr *Expression) Visit(visitor VisitStmt) (interface{}, error) {
+	return visitor.VisitExpressionStmt(expr)
+}
+
+type Print struct {
+	Expression Expr
+}
+
+func NewPrint(expression Expr) Stmt {
+	return &Print{
+		Expression: expression,
+	}
+}
+
+func (expr *Print) Visit(visitor VisitStmt) (interface{}, error) {
+	return visitor.VisitPrintStmt(expr)
+}
+
+type Var struct {
+	Name        token.Token
+	Initializer Expr
+}
+
+func NewVar(name token.Token, initializer Expr) Stmt {
+	return &Var{
+		Name:        name,
+		Initializer: initializer,
+	}
+}
+
+func (expr *Var) Visit(visitor VisitStmt) (interface{}, error) {
+	return visitor.VisitVarStmt(expr)
+}

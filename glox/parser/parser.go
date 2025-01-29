@@ -19,14 +19,86 @@ func NewParser(tokens []token.Token) *Parser {
 	}
 }
 
-func (p *Parser) Parse() Expr {
-	expr, err := p.expression()
-	if err != nil {
-		return nil
+func (p *Parser) Parse() []Stmt {
+	statements := make([]Stmt, 0)
+	for !p.isAtEnd() {
+		stmt, err := p.statement()
+		if err != nil {
+			utils.DLogf("%v\n", err)
+			continue
+		}
+		statements = append(statements, stmt)
 	}
-	return expr
+
+	return statements
 }
 
+// Functions for stmt.go
+// Add syncrhonize
+func (p *Parser) declaration() (Stmt, error) {
+	if p.match(token.VAR) {
+		return p.varDeclaration()
+	}
+
+	return p.statement()
+}
+func (p *Parser) statement() (Stmt, error) {
+	if p.match(token.PRINT) {
+		return p.printStatement()
+	}
+
+	return p.expressionStatement()
+}
+func (p *Parser) printStatement() (Stmt, error) {
+	expr, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+
+	p.consume(token.SEMICOLON, "Expect ';' after value")
+	return &Print{
+		Expression: expr,
+	}, nil
+}
+
+func (p *Parser) expressionStatement() (Stmt, error) {
+	expr, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+
+	p.consume(token.SEMICOLON, "Expect ';' after value")
+	return &Expression{
+		Expression: expr,
+	}, nil
+}
+
+func (p *Parser) varDeclaration() (Stmt, error) {
+	name, err := p.consume(token.IDENTIFIER, "Expecting variable name")
+	if err != nil {
+		return nil, err
+	}
+
+	var initializer Expr
+	if p.match(token.EQUAL) {
+		initializer, err = p.expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = p.consume(token.SEMICOLON, "Expect ';' after variable declaration")
+	if err != nil {
+		return nil, err
+	}
+
+	return &Var{
+		Name:        *name,
+		Initializer: initializer,
+	}, nil
+}
+
+// Functions for expr.go
 func (p *Parser) expression() (Expr, error) {
 	return p.equality()
 }

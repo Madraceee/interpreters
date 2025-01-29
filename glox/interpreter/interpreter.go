@@ -28,15 +28,32 @@ func (e *RuntimeError) Error() string {
 	return "Runtime Error: " + e.Err.Error() + "\n[Line " + lineStr + "]\n"
 }
 
-func (i *Interpreter) Interpret(exp parser.Expr) {
-	val, err := i.evaluate(exp)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
+func (i *Interpreter) Interpret(stmts []parser.Stmt) {
+	for _, stmt := range stmts {
+		_, err := i.execute(stmt)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
 	}
+}
 
-	utils.DPrintf("%s\n", "----Interpreter Result----")
-	fmt.Printf("%s", token.GetStringValue(val.(token.Object)))
+func (i *Interpreter) execute(stmt parser.Stmt) (interface{}, error) {
+	return stmt.Visit(i)
+}
+
+func (i *Interpreter) VisitExpressionStmt(e *parser.Expression) (interface{}, error) {
+	_, err := i.evaluate(e.Expression)
+	return nil, err
+}
+
+func (i *Interpreter) VisitPrintStmt(p *parser.Print) (interface{}, error) {
+	val, err := i.evaluate(p.Expression)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(token.GetStringValue(val.(token.Object)))
+	return nil, nil
 }
 
 func (i *Interpreter) VisitLiteralExpr(l *parser.Literal) (interface{}, error) {
