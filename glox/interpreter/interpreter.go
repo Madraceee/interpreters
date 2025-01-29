@@ -25,7 +25,7 @@ type RuntimeError struct {
 func (e *RuntimeError) Error() string {
 	utils.HadRunTimeError = true
 	lineStr := strconv.Itoa(e.Token.Line)
-	return e.Err.Error() + "\n[Line " + lineStr + "]\n"
+	return "Runtime Error: " + e.Err.Error() + "\n[Line " + lineStr + "]\n"
 }
 
 func (i *Interpreter) Interpret(exp parser.Expr) {
@@ -152,6 +152,12 @@ func (i *Interpreter) VisitBinaryExpr(b *parser.Binary) (interface{}, error) {
 		err := i.checkNumberOperands(b.Operator, b.Left, b.Right)
 		if err != nil {
 			return nil, err
+		}
+		if right.(token.Object).Value_float == 0 {
+			return nil, &RuntimeError{
+				Token: b.Operator,
+				Err:   errors.New("cannot divide by 0"),
+			}
 		}
 		return token.Object{
 			ObjType:     token.NUMBER_TYPE,
