@@ -3,5 +3,10 @@ Temp readme
 ```
 cd glox
 make build
-./bin/glox
+```
+---
+
+To run 
+```
+./bin/glox FILENAME
 ```
