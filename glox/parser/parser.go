@@ -54,6 +54,7 @@ func (p *Parser) statement() (Stmt, error) {
 		return p.printStatement()
 	}
 	if p.match(token.WHILE) {
+		return p.whileStatemet()
 	}
 	if p.match(token.LEFT_BRACE) {
 		stmt, err := p.block()
@@ -170,7 +171,7 @@ func (p *Parser) forStatement() (Stmt, error) {
 }
 
 func (p *Parser) whileStatemet() (Stmt, error) {
-	_, err := p.consume(token.RIGHT_PARAN, "Expect '(' after while.")
+	_, err := p.consume(token.LEFT_PARAN, "Expect '(' after while.")
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +191,7 @@ func (p *Parser) whileStatemet() (Stmt, error) {
 		return nil, err
 	}
 
-	return NewWhile(condition, body), err
+	return NewWhile(condition, body), nil
 }
 
 func (p *Parser) expressionStatement() (Stmt, error) {
