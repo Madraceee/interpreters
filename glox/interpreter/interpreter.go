@@ -83,7 +83,7 @@ func (i *Interpreter) VisitLiteralExpr(l *parser.Literal) (interface{}, error) {
 }
 
 func (i *Interpreter) VisitGroupingExpr(g *parser.Grouping) (interface{}, error) {
-	return i.evaluate(g)
+	return i.evaluate(g.Expression)
 }
 
 func (i *Interpreter) VisitUnaryExpr(u *parser.Unary) (interface{}, error) {
