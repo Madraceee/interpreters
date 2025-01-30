@@ -38,6 +38,10 @@ func (ap *AstPrinter) VisitUnaryExpr(u *Unary) (interface{}, error) {
 	return ap.parenthesize(u.Operator.String(), u.Right)
 }
 
+func (ap *AstPrinter) VisitVariableExpr(v *Variable) (interface{}, error) {
+	return ap.parenthesize(v.Name.Lexeme)
+}
+
 func (ap *AstPrinter) parenthesize(name string, exprs ...Expr) (string, error) {
 	builder := strings.Builder{}
 

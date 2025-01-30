@@ -5,16 +5,20 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/madraceee/interpreters/glox/environment"
 	"github.com/madraceee/interpreters/glox/parser"
 	"github.com/madraceee/interpreters/glox/token"
 	"github.com/madraceee/interpreters/glox/utils"
 )
 
 type Interpreter struct {
+	Environment *environment.Environment
 }
 
 func NewInterpreter() *Interpreter {
-	return &Interpreter{}
+	return &Interpreter{
+		Environment: environment.NewEnvironment(nil),
+	}
 }
 
 type RuntimeError struct {
@@ -40,6 +44,24 @@ func (i *Interpreter) Interpret(stmts []parser.Stmt) {
 
 func (i *Interpreter) execute(stmt parser.Stmt) (interface{}, error) {
 	return stmt.Visit(i)
+}
+
+func (i *Interpreter) VisitBlockStmt(b *parser.Block) (interface{}, error) {
+	return nil, i.executeBlock(b.Statements, environment.NewEnvironment(i.Environment))
+}
+
+func (i *Interpreter) VisitVarStmt(v *parser.Var) (interface{}, error) {
+	var value interface{}
+	var err error
+	if v.Initializer != nil {
+		value, err = i.evaluate(v.Initializer)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	i.Environment.Define(v.Name.Lexeme, value)
+	return nil, nil
 }
 
 func (i *Interpreter) VisitExpressionStmt(e *parser.Expression) (interface{}, error) {
@@ -88,6 +110,20 @@ func (i *Interpreter) VisitUnaryExpr(u *parser.Unary) (interface{}, error) {
 		Token: u.Operator,
 		Err:   errors.New("undefined unary token"),
 	}
+}
+
+func (i *Interpreter) VisitAssignExpr(a *parser.Assign) (interface{}, error) {
+	val, err := i.evaluate(a.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	err = i.Environment.Assign(a.Name, val)
+	return val, err
+}
+
+func (i *Interpreter) VisitVariableExpr(v *parser.Variable) (interface{}, error) {
+	return i.Environment.Get(v.Name)
 }
 
 func (i *Interpreter) VisitBinaryExpr(b *parser.Binary) (interface{}, error) {
@@ -351,4 +387,19 @@ func (i *Interpreter) checkNumberOperands(operator token.Token, left, right pars
 		Token: operator,
 		Err:   errors.New("Operands must be a number."),
 	}
+}
+
+func (i *Interpreter) executeBlock(stmts []parser.Stmt, env *environment.Environment) error {
+	previous := i.Environment
+	defer func() { i.Environment = previous }()
+
+	i.Environment = env
+	for _, stmt := range stmts {
+		_, err := i.execute(stmt)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

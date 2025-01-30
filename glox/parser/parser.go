@@ -22,7 +22,7 @@ func NewParser(tokens []token.Token) *Parser {
 func (p *Parser) Parse() []Stmt {
 	statements := make([]Stmt, 0)
 	for !p.isAtEnd() {
-		stmt, err := p.statement()
+		stmt, err := p.declaration()
 		if err != nil {
 			utils.DLogf("%v\n", err)
 			continue
@@ -46,9 +46,28 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(token.PRINT) {
 		return p.printStatement()
 	}
+	if p.match(token.LEFT_BRACE) {
+		stmt, err := p.block()
+		return NewBlock(stmt), err
+	}
 
 	return p.expressionStatement()
 }
+
+func (p *Parser) block() ([]Stmt, error) {
+	statements := make([]Stmt, 0)
+	for !p.check(token.RIGHT_BRACE) && !p.isAtEnd() {
+		stmts, err := p.declaration()
+		if err != nil {
+			return nil, err
+		}
+		statements = append(statements, stmts)
+	}
+
+	p.consume(token.RIGHT_BRACE, "Expect '}' after block.")
+	return statements, nil
+}
+
 func (p *Parser) printStatement() (Stmt, error) {
 	expr, err := p.expression()
 	if err != nil {
@@ -100,7 +119,33 @@ func (p *Parser) varDeclaration() (Stmt, error) {
 
 // Functions for expr.go
 func (p *Parser) expression() (Expr, error) {
-	return p.equality()
+	return p.assignment()
+}
+
+func (p *Parser) assignment() (Expr, error) {
+	expr, err := p.equality()
+	if err != nil {
+		return nil, err
+	}
+
+	if p.match(token.EQUAL) {
+		equals := p.previous()
+		value, err := p.assignment()
+		if err != nil {
+			return nil, err
+		}
+
+		switch expr.(type) {
+		case *Variable:
+			name := expr.(*Variable).Name
+			return NewAssign(name, value), nil
+		}
+
+		return nil, ParserError(equals, "Invalid assignment target")
+
+	}
+
+	return expr, nil
 }
 
 func (p *Parser) equality() (Expr, error) {
@@ -211,6 +256,10 @@ func (p *Parser) primary() (Expr, error) {
 			Value_str:   p.previous().Literal.Value_str,
 			Value_float: p.previous().Literal.Value_float,
 		}), nil
+	}
+
+	if p.match(token.IDENTIFIER) {
+		return NewVariable(*p.previous()), nil
 	}
 
 	if p.match(token.LEFT_PARAN) {

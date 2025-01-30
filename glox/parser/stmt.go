@@ -9,9 +9,24 @@ type Stmt interface {
 }
 
 type VisitStmt interface {
+	VisitBlockStmt(*Block) (interface{}, error)
 	VisitExpressionStmt(*Expression) (interface{}, error)
 	VisitPrintStmt(*Print) (interface{}, error)
 	VisitVarStmt(*Var) (interface{}, error)
+}
+
+type Block struct {
+	Statements []Stmt
+}
+
+func NewBlock(statements []Stmt) Stmt {
+	return &Block{
+		Statements: statements,
+	}
+}
+
+func (expr *Block) Visit(visitor VisitStmt) (interface{}, error) {
+	return visitor.VisitBlockStmt(expr)
 }
 
 type Expression struct {

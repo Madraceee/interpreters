@@ -6,7 +6,7 @@ import (
 )
 
 func astPrinter() {
-	expr := parser.NewBinary(
+	_ = parser.NewBinary(
 		parser.NewUnary(
 			token.NewToken(token.MINUS, "-", token.Object{}, 1),
 			parser.NewLiteral(token.Object{
@@ -23,6 +23,6 @@ func astPrinter() {
 		),
 	)
 
-	ap := parser.NewAstPrinter()
-	ap.Print(expr)
+	// ap := parser.NewAstPrinter()
+	// ap.Print(expr)
 }
