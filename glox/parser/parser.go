@@ -43,6 +43,9 @@ func (p *Parser) declaration() (Stmt, error) {
 	return p.statement()
 }
 func (p *Parser) statement() (Stmt, error) {
+	if p.match(token.IF) {
+		return p.ifStatement()
+	}
 	if p.match(token.PRINT) {
 		return p.printStatement()
 	}
@@ -115,6 +118,39 @@ func (p *Parser) varDeclaration() (Stmt, error) {
 		Name:        *name,
 		Initializer: initializer,
 	}, nil
+}
+
+func (p *Parser) ifStatement() (Stmt, error) {
+	_, err := p.consume(token.LEFT_PARAN, "Expect '(' after if.")
+	if err != nil {
+		return nil, err
+	}
+
+	expr, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(token.RIGHT_PARAN, "Expect ')' after if.")
+	if err != nil {
+		return nil, err
+	}
+
+	thenBranch, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	if p.match(token.ELSE) {
+		elseBranch, err := p.statement()
+		if err != nil {
+			return nil, err
+		}
+
+		return NewIf(expr, thenBranch, elseBranch), nil
+	}
+
+	return NewIf(expr, thenBranch, nil), nil
 }
 
 // Functions for expr.go

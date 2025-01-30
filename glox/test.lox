@@ -20,3 +20,9 @@ print c;
 
 
 print 1 > 2 == false;
+
+if ( 1 < 2 ) {
+	print "truthy";
+} else {
+	print "falasy";
+}

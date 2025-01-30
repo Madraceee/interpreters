@@ -241,6 +241,28 @@ func (i *Interpreter) VisitBinaryExpr(b *parser.Binary) (interface{}, error) {
 	}
 }
 
+func (i *Interpreter) VisitIfStmt(pif *parser.If) (interface{}, error) {
+	val, err := i.evaluate(pif.Condition)
+	if err != nil {
+		return nil, err
+	}
+
+	if val.(token.Object).Value_bool {
+		_, err = i.execute(pif.ThenBranch)
+		if err != nil {
+			return nil, err
+		}
+
+	} else if pif.ElseBranch != nil {
+		_, err = i.execute(pif.ElseBranch)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return nil, nil
+}
+
 func (i *Interpreter) isTruthy(e parser.Expr) (interface{}, error) {
 	utils.DPrintf("isTruthy -> %+v\n", e)
 	v, err := e.Visit(i)
