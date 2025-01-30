@@ -25,6 +25,7 @@ func (p *Parser) Parse() []Stmt {
 		stmt, err := p.declaration()
 		if err != nil {
 			utils.DLogf("%v\n", err)
+			p.Synchronize()
 			continue
 		}
 		statements = append(statements, stmt)
@@ -43,11 +44,16 @@ func (p *Parser) declaration() (Stmt, error) {
 	return p.statement()
 }
 func (p *Parser) statement() (Stmt, error) {
+	if p.match(token.FOR) {
+		return p.forStatement()
+	}
 	if p.match(token.IF) {
 		return p.ifStatement()
 	}
 	if p.match(token.PRINT) {
 		return p.printStatement()
+	}
+	if p.match(token.WHILE) {
 	}
 	if p.match(token.LEFT_BRACE) {
 		stmt, err := p.block()
@@ -81,6 +87,110 @@ func (p *Parser) printStatement() (Stmt, error) {
 	return &Print{
 		Expression: expr,
 	}, nil
+}
+
+func (p *Parser) forStatement() (Stmt, error) {
+	_, err := p.consume(token.LEFT_PARAN, "Expect '(' after for.")
+	if err != nil {
+		return nil, err
+	}
+
+	// Declaration part
+	var initializer Stmt
+	if p.match(token.SEMICOLON) {
+		initializer = nil
+	} else if p.match(token.VAR) {
+		initializer, err = p.varDeclaration()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		initializer, err = p.expressionStatement()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// For loop condition
+	var condition Expr
+	if !p.check(token.SEMICOLON) {
+		condition, err = p.expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = p.consume(token.SEMICOLON, "Expect ';' after condition.")
+	if err != nil {
+		return nil, err
+	}
+
+	// For loop state modifier
+	var increment Expr
+	if !p.check(token.RIGHT_PARAN) {
+		increment, err = p.expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = p.consume(token.RIGHT_PARAN, "Expect ')' after clause.")
+	if err != nil {
+		return nil, err
+	}
+
+	// Body
+	body, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	// Scoping into New Expr
+	// Desugaring for syntax to be used with existing functions
+	if increment != nil {
+		body = NewBlock([]Stmt{body, NewExpression(increment)})
+	}
+
+	if condition == nil {
+		condition = NewLiteral(token.Object{
+			ObjType:    token.BOOL_TYPE,
+			Value_bool: true,
+		})
+	}
+	body = &While{
+		Condition: condition,
+		Body:      body,
+	}
+
+	if initializer != nil {
+		body = NewBlock([]Stmt{initializer, body})
+	}
+
+	return body, nil
+}
+
+func (p *Parser) whileStatemet() (Stmt, error) {
+	_, err := p.consume(token.RIGHT_PARAN, "Expect '(' after while.")
+	if err != nil {
+		return nil, err
+	}
+
+	condition, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(token.RIGHT_PARAN, "Expect ')' after condition.")
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewWhile(condition, body), err
 }
 
 func (p *Parser) expressionStatement() (Stmt, error) {
@@ -159,7 +269,7 @@ func (p *Parser) expression() (Expr, error) {
 }
 
 func (p *Parser) assignment() (Expr, error) {
-	expr, err := p.equality()
+	expr, err := p.or()
 	if err != nil {
 		return nil, err
 	}
@@ -179,6 +289,43 @@ func (p *Parser) assignment() (Expr, error) {
 
 		return nil, ParserError(equals, "Invalid assignment target")
 
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) or() (Expr, error) {
+	expr, err := p.and()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(token.OR) {
+		operator := p.previous()
+		right, err := p.and()
+		if err != nil {
+			return nil, err
+		}
+
+		expr = NewLogical(expr, *operator, right)
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) and() (Expr, error) {
+	expr, err := p.equality()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(token.AND) {
+		operator := p.previous()
+		right, err := p.equality()
+		if err != nil {
+			return nil, err
+		}
+		expr = NewLogical(expr, *operator, right)
 	}
 
 	return expr, nil

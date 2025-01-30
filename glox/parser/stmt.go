@@ -14,6 +14,7 @@ type VisitStmt interface {
 	VisitIfStmt(*If) (interface{}, error)
 	VisitPrintStmt(*Print) (interface{}, error)
 	VisitVarStmt(*Var) (interface{}, error)
+	VisitWhileStmt(*While) (interface{}, error)
 }
 
 type Block struct {
@@ -90,4 +91,20 @@ func NewVar(name token.Token, initializer Expr) Stmt {
 
 func (expr *Var) Visit(visitor VisitStmt) (interface{}, error) {
 	return visitor.VisitVarStmt(expr)
+}
+
+type While struct {
+	Condition Expr
+	Body      Stmt
+}
+
+func NewWhile(condition Expr, body Stmt) Stmt {
+	return &While{
+		Condition: condition,
+		Body:      body,
+	}
+}
+
+func (expr *While) Visit(visitor VisitStmt) (interface{}, error) {
+	return visitor.VisitWhileStmt(expr)
 }

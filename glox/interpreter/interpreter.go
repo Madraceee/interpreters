@@ -122,6 +122,47 @@ func (i *Interpreter) VisitAssignExpr(a *parser.Assign) (interface{}, error) {
 	return val, err
 }
 
+func (i *Interpreter) VisitLogicalExpr(l *parser.Logical) (interface{}, error) {
+	left, err := i.evaluate(l.Left)
+	if err != nil {
+		return nil, err
+	}
+
+	val, err := i.isObjectTruthy(left.(token.Object))
+	if err != nil {
+		return nil, err
+	}
+	if l.Operator.TokenType == token.OR {
+		if val.Value_bool {
+			return left, nil
+		}
+	} else {
+		if !val.Value_bool {
+			return left, nil
+		}
+	}
+
+	return i.evaluate(l.Right)
+}
+
+func (i *Interpreter) VisitWhileStmt(w *parser.While) (interface{}, error) {
+	for {
+		res, err := i.isTruthy(w.Condition)
+		if err != nil {
+			return nil, err
+		}
+		if res.(token.Object).Value_bool == false {
+			break
+		}
+		_, err = i.execute(w.Body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return nil, nil
+}
+
 func (i *Interpreter) VisitVariableExpr(v *parser.Variable) (interface{}, error) {
 	return i.Environment.Get(v.Name)
 }
@@ -131,6 +172,7 @@ func (i *Interpreter) VisitBinaryExpr(b *parser.Binary) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	right, err := i.evaluate(b.Right)
 	if err != nil {
 		return nil, err
@@ -271,43 +313,52 @@ func (i *Interpreter) isTruthy(e parser.Expr) (interface{}, error) {
 	}
 	switch v.(type) {
 	case token.Object:
-		switch v.(token.Object).ObjType {
-		case token.BOOL_TYPE:
-			return v, nil
-		case token.STRING_TYPE:
-			if len(v.(token.Object).Value_str) > 0 {
-				return token.Object{
-					ObjType:    token.BOOL_TYPE,
-					Value_bool: true,
-				}, nil
-			} else {
-				return token.Object{
-					ObjType:    token.BOOL_TYPE,
-					Value_bool: false,
-				}, nil
-			}
-		case token.NUMBER_TYPE:
-			if v.(token.Object).Value_float != 0 {
-				return token.Object{
-					ObjType:    token.BOOL_TYPE,
-					Value_bool: true,
-				}, nil
-			} else {
-				return token.Object{
-					ObjType:    token.BOOL_TYPE,
-					Value_bool: false,
-				}, nil
-			}
-		case token.NOT_ASSIGNED_TYPE:
+		return i.isObjectTruthy(v.(token.Object))
+	}
+
+	return nil, errors.New("undefined type for truthy")
+}
+
+func (i *Interpreter) isObjectTruthy(o token.Object) (token.Object, error) {
+	switch o.ObjType {
+	case token.BOOL_TYPE:
+		return o, nil
+	case token.STRING_TYPE:
+		if len(o.Value_str) > 0 {
+			return token.Object{
+				ObjType:    token.BOOL_TYPE,
+				Value_bool: true,
+			}, nil
+		} else {
 			return token.Object{
 				ObjType:    token.BOOL_TYPE,
 				Value_bool: false,
 			}, nil
-
 		}
+	case token.NUMBER_TYPE:
+		if o.Value_float != 0 {
+			return token.Object{
+				ObjType:    token.BOOL_TYPE,
+				Value_bool: true,
+			}, nil
+		} else {
+			return token.Object{
+				ObjType:    token.BOOL_TYPE,
+				Value_bool: false,
+			}, nil
+		}
+	case token.NOT_ASSIGNED_TYPE:
+		return token.Object{
+			ObjType:    token.BOOL_TYPE,
+			Value_bool: false,
+		}, nil
+
 	}
 
-	return nil, errors.New("undefined type for truthy")
+	return token.Object{
+		ObjType:    token.BOOL_TYPE,
+		Value_bool: false,
+	}, nil
 }
 
 func (i *Interpreter) isEqual(a, b parser.Expr) (interface{}, error) {
