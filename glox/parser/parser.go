@@ -37,6 +37,9 @@ func (p *Parser) Parse() []Stmt {
 // Functions for stmt.go
 // Add syncrhonize
 func (p *Parser) declaration() (Stmt, error) {
+	if p.match(token.FUN) {
+		return p.function("function")
+	}
 	if p.match(token.VAR) {
 		return p.varDeclaration()
 	}
@@ -264,6 +267,55 @@ func (p *Parser) ifStatement() (Stmt, error) {
 	return NewIf(expr, thenBranch, nil), nil
 }
 
+func (p *Parser) function(kind string) (*Function, error) {
+	name, err := p.consume(token.IDENTIFIER, "Expect "+kind+" name.")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(token.LEFT_PARAN, "Expect '(' after "+kind+" name.")
+	if err != nil {
+		return nil, err
+	}
+
+	parameters := make([]token.Token, 0)
+	if !p.check(token.RIGHT_PARAN) {
+		for {
+			if len(parameters) > 255 {
+				_ = ParserError(p.peek(), "Cannot have more than 255 parameters")
+			}
+
+			param, err := p.consume(token.IDENTIFIER, "Expect parameter name.")
+			if err != nil {
+				return nil, err
+			}
+			parameters = append(parameters, *param)
+
+			if !p.match(token.COMMA) {
+				break
+			}
+		}
+	}
+
+	_, err = p.consume(token.RIGHT_PARAN, "Expect ')' after parameters.")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(token.LEFT_BRACE, "Expect '{' before "+kind+" body.")
+	if err != nil {
+		return nil, err
+	}
+
+	stmts, err := p.block()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewFunction(*name, parameters, stmts).(*Function), err
+
+}
+
 // Functions for expr.go
 func (p *Parser) expression() (Expr, error) {
 	return p.assignment()
@@ -411,7 +463,56 @@ func (p *Parser) unary() (Expr, error) {
 		return NewUnary(*operator, right), err
 	}
 
-	return p.primary()
+	return p.call()
+}
+
+func (p *Parser) call() (Expr, error) {
+	expr, err := p.primary()
+	if err != nil {
+		return nil, err
+	}
+
+	for {
+		if p.match(token.LEFT_PARAN) {
+			expr, err = p.finishCall(expr)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			break
+		}
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) finishCall(callee Expr) (Expr, error) {
+	arguments := make([]Expr, 0)
+
+	if !p.check(token.RIGHT_PARAN) {
+		for {
+			exp, err := p.expression()
+			if err != nil {
+				return nil, err
+			}
+
+			if len(arguments) > 255 {
+				ParserError(p.peek(), "Cannot have more than 255 arguments.")
+			}
+
+			arguments = append(arguments, exp)
+			if !p.match(token.COMMA) {
+				break
+			}
+		}
+	}
+
+	paren, err := p.consume(token.RIGHT_PARAN, "Expect ')' after arguments")
+	if err != nil {
+		return nil, err
+	}
+
+	return NewCall(callee, *paren, arguments), nil
 }
 
 func (p *Parser) primary() (Expr, error) {

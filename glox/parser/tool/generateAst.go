@@ -46,6 +46,7 @@ func generateStmt() {
 	defineAst(file, "Stmt", []string{
 		"Block : []Stmt statements",
 		"Expression : Expr expression",
+		"Function : Token name, []Token params, []Stmt body",
 		"If : Expr condition, Stmt thenBranch, Stmt elseBranch",
 		"Print : Expr expression",
 		"Var : Token name, Expr initializer",
@@ -76,6 +77,7 @@ func generateExpr() {
 	defineAst(file, "Expr", []string{
 		"Assign : Token name, Expr value",
 		"Binary : Expr left, Token operator, Expr right",
+		"Call : Expr callee, Token paren, []Expr arguments",
 		"Grouping : Expr expression",
 		"Literal : Object value",
 		"Logical: Expr left, Token operator, Expr right",
@@ -194,8 +196,19 @@ func defineToBeImplementedInterface(file *os.File, basename string, types []stri
 }
 
 func replaceOtherPackageTypes(otherPackageType string) string {
+	isArr := false
+	if otherPackageType[0:2] == "[]" {
+		isArr = true
+		otherPackageType = otherPackageType[2:]
+	}
 	if packageName, ok := otherPackageTypes[otherPackageType]; ok {
+		if isArr {
+			packageName = "[]" + packageName
+		}
 		return packageName + "." + otherPackageType
+	}
+	if isArr {
+		otherPackageType = "[]" + otherPackageType
 	}
 	return otherPackageType
 }

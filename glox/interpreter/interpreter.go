@@ -12,12 +12,17 @@ import (
 )
 
 type Interpreter struct {
+	globals     *environment.Environment
 	Environment *environment.Environment
 }
 
 func NewInterpreter() *Interpreter {
+	env := environment.NewEnvironment(nil)
+
+	env.Define("clock", clock{})
 	return &Interpreter{
-		Environment: environment.NewEnvironment(nil),
+		globals:     env,
+		Environment: env,
 	}
 }
 
@@ -67,6 +72,12 @@ func (i *Interpreter) VisitVarStmt(v *parser.Var) (interface{}, error) {
 func (i *Interpreter) VisitExpressionStmt(e *parser.Expression) (interface{}, error) {
 	_, err := i.evaluate(e.Expression)
 	return nil, err
+}
+
+func (i *Interpreter) VisitFunctionStmt(f *parser.Function) (interface{}, error) {
+	function := NewLoxFunction(f)
+	i.Environment.Define(f.Name.Lexeme, function)
+	return nil, nil
 }
 
 func (i *Interpreter) VisitPrintStmt(p *parser.Print) (interface{}, error) {
@@ -280,6 +291,42 @@ func (i *Interpreter) VisitBinaryExpr(b *parser.Binary) (interface{}, error) {
 	return nil, &RuntimeError{
 		Token: b.Operator,
 		Err:   errors.New("undefined binary token"),
+	}
+}
+
+func (i *Interpreter) VisitCallExpr(c *parser.Call) (interface{}, error) {
+	callee, err := i.evaluate(c.Callee)
+	if err != nil {
+		return nil, err
+	}
+
+	arguments := make([]interface{}, 0)
+
+	for _, argument := range c.Arguments {
+		res, err := i.evaluate(argument)
+		if err != nil {
+			return nil, err
+		}
+
+		arguments = append(arguments, res)
+	}
+
+	switch callee.(type) {
+	case LoxCallable:
+		function := callee.(LoxCallable)
+		if len(arguments) != function.Arity() {
+			return nil, &RuntimeError{
+				Token: c.Paren,
+				Err:   errors.New("Expected " + strconv.Itoa(function.Arity()) + " arguments but got " + strconv.Itoa(len(arguments)) + "."),
+			}
+		}
+
+		return function.Call(i, arguments)
+	}
+
+	return nil, &RuntimeError{
+		Token: c.Paren,
+		Err:   errors.New("Can only call functions and classes"),
 	}
 }
 

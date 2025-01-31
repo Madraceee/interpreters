@@ -11,6 +11,7 @@ type Expr interface {
 type VisitExpr interface {
 	VisitAssignExpr(*Assign) (interface{}, error)
 	VisitBinaryExpr(*Binary) (interface{}, error)
+	VisitCallExpr(*Call) (interface{}, error)
 	VisitGroupingExpr(*Grouping) (interface{}, error)
 	VisitLiteralExpr(*Literal) (interface{}, error)
 	VisitLogicalExpr(*Logical) (interface{}, error)
@@ -50,6 +51,24 @@ func NewBinary(left Expr, operator token.Token, right Expr) Expr {
 
 func (expr *Binary) Visit(visitor VisitExpr) (interface{}, error) {
 	return visitor.VisitBinaryExpr(expr)
+}
+
+type Call struct {
+	Callee    Expr
+	Paren     token.Token
+	Arguments []Expr
+}
+
+func NewCall(callee Expr, paren token.Token, arguments []Expr) Expr {
+	return &Call{
+		Callee:    callee,
+		Paren:     paren,
+		Arguments: arguments,
+	}
+}
+
+func (expr *Call) Visit(visitor VisitExpr) (interface{}, error) {
+	return visitor.VisitCallExpr(expr)
 }
 
 type Grouping struct {

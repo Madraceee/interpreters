@@ -11,6 +11,7 @@ type Stmt interface {
 type VisitStmt interface {
 	VisitBlockStmt(*Block) (interface{}, error)
 	VisitExpressionStmt(*Expression) (interface{}, error)
+	VisitFunctionStmt(*Function) (interface{}, error)
 	VisitIfStmt(*If) (interface{}, error)
 	VisitPrintStmt(*Print) (interface{}, error)
 	VisitVarStmt(*Var) (interface{}, error)
@@ -43,6 +44,24 @@ func NewExpression(expression Expr) Stmt {
 
 func (expr *Expression) Visit(visitor VisitStmt) (interface{}, error) {
 	return visitor.VisitExpressionStmt(expr)
+}
+
+type Function struct {
+	Name   token.Token
+	Params []token.Token
+	Body   []Stmt
+}
+
+func NewFunction(name token.Token, params []token.Token, body []Stmt) Stmt {
+	return &Function{
+		Name:   name,
+		Params: params,
+		Body:   body,
+	}
+}
+
+func (expr *Function) Visit(visitor VisitStmt) (interface{}, error) {
+	return visitor.VisitFunctionStmt(expr)
 }
 
 type If struct {
