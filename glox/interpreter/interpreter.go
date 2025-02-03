@@ -75,7 +75,7 @@ func (i *Interpreter) VisitExpressionStmt(e *parser.Expression) (interface{}, er
 }
 
 func (i *Interpreter) VisitFunctionStmt(f *parser.Function) (interface{}, error) {
-	function := NewLoxFunction(f)
+	function := NewLoxFunction(f, i.Environment)
 	i.Environment.Define(f.Name.Lexeme, function)
 	return nil, nil
 }
@@ -85,8 +85,28 @@ func (i *Interpreter) VisitPrintStmt(p *parser.Print) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if val == nil {
+		fmt.Println("nil")
+		return nil, nil
+	}
 	fmt.Println(token.GetStringValue(val.(token.Object)))
 	return nil, nil
+}
+
+func (i *Interpreter) VisitReturnStmt(r *parser.Return) (interface{}, error) {
+	var value interface{}
+	var err error
+	if r.Value != nil {
+		value, err = i.evaluate(r.Value)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, &ReturnError{
+		Value: value,
+	}
 }
 
 func (i *Interpreter) VisitLiteralExpr(l *parser.Literal) (interface{}, error) {

@@ -14,6 +14,7 @@ type VisitStmt interface {
 	VisitFunctionStmt(*Function) (interface{}, error)
 	VisitIfStmt(*If) (interface{}, error)
 	VisitPrintStmt(*Print) (interface{}, error)
+	VisitReturnStmt(*Return) (interface{}, error)
 	VisitVarStmt(*Var) (interface{}, error)
 	VisitWhileStmt(*While) (interface{}, error)
 }
@@ -94,6 +95,22 @@ func NewPrint(expression Expr) Stmt {
 
 func (expr *Print) Visit(visitor VisitStmt) (interface{}, error) {
 	return visitor.VisitPrintStmt(expr)
+}
+
+type Return struct {
+	Keyword token.Token
+	Value   Expr
+}
+
+func NewReturn(keyword token.Token, value Expr) Stmt {
+	return &Return{
+		Keyword: keyword,
+		Value:   value,
+	}
+}
+
+func (expr *Return) Visit(visitor VisitStmt) (interface{}, error) {
+	return visitor.VisitReturnStmt(expr)
 }
 
 type Var struct {
