@@ -160,6 +160,7 @@ static TokenType identifierType(){
 					case 'r': return checkKeyword(2,2,"ue", TOKEN_TRUE);
 				}
 			}
+		break;
 	}
 	return TOKEN_IDENTIFIER;
 }

@@ -14,6 +14,7 @@ typedef enum{
 	OP_DIVIDE,
 }OpCode;
 
+// Chunk Used to store instrcutions as bytecode
 typedef struct {
 	int capacity;
 	int count;
@@ -22,6 +23,7 @@ typedef struct {
 	ValueArray constants;
 } Chunk;
 
+// Functions to increase or decrease the size of chunks
 void initChunk(Chunk* chunk);
 void freeChunk(Chunk* chunk);
 void writeChunk(Chunk* chunk, uint8_t byte, int line);

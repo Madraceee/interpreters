@@ -5,6 +5,10 @@
 
 typedef double Value;
 
+// ValueArray Used to store literal values
+// Since constant cannot be directly stored in OPCODE
+// We use a constants Pool to store the values
+// These values are refered from the chunk as and when required.
 typedef struct {
 	int capacity;
 	int count;

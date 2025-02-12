@@ -7,6 +7,10 @@
 
 #define STACK_MAX 256
 
+// VM
+// chunk contains all the bytecode and other data
+// ip is a pointer which points to the current chunk/instruction
+// stack used to store intermediate values for calculation
 typedef struct{
 	Chunk* chunk;
 	uint8_t* ip;
