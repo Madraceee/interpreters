@@ -126,7 +126,6 @@ static void consume(TokenType type , const char* message){
 }
 
 // Function declaration
-static void expression();
 static ParseRule* getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
@@ -222,6 +221,8 @@ static ParseRule* getRule(TokenType type){
 	return &rules[type];
 }
 
+
+// TODO: Fix grouping
 static void parsePrecedence(Precedence precedence){
 	advance();
 	ParseFn prefixRule = getRule(parser.previous.type)->prefix;
