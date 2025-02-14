@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "memory.h"
 #include "object.h"
+#include "table.h"
 #include "value.h"
 #include "stdarg.h"
 #include <stdint.h>
@@ -42,6 +43,7 @@ static bool isFalsey(Value value) {
 
 void initVM(){
 	resetStack();
+	initTable(&vm.strings);
 	vm.objects = NULL;
 }
 
@@ -57,6 +59,7 @@ Value pop(){
 
 
 void freeVM(){
+	freeTable(&vm.strings);
 	freeObjects();
 }
 
