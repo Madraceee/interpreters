@@ -127,12 +127,21 @@ static void consume(TokenType type , const char* message){
 	error(message);
 }
 
+static bool check(TokenType type){
+	return parser.current.type == type;
+}
+
+static bool match(TokenType type){
+	if (!check(type)) return false;
+	advance();
+	return true;
+}
+
 // Function declaration
 static ParseRule* getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
-// Connection parser with code generation
-
+// Connecting parser with code generation
 static void number(){
 	double value = strtod(parser.previous.start, NULL);
 	emitConstant(NUMBER_VAL(value));
@@ -140,6 +149,41 @@ static void number(){
 
 static void expression(){
 	parsePrecedence(PREC_ASSIGNMENT);
+}
+
+static void expressionStatement(){
+	expression();
+	consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
+	emitByte(OP_POP);
+}
+
+static void printStatement(){
+	expression();
+	consume(TOKEN_SEMICOLON, "Expect ';' after value.");
+	emitByte(OP_PRINT);
+}
+
+static void synchronize(){
+	parser.panicMode = false;
+
+	while(parser.current.type != TOKEN_EOF){
+		if (parser.previous.type == TOKEN_SEMICOLON) return;
+		switch (parser.current.type) {
+			case TOKEN_CLASS:
+			case TOKEN_FUN:
+			case TOKEN_VAR:
+			case TOKEN_FOR:
+			case TOKEN_IF:
+			case TOKEN_WHILE:
+			case TOKEN_PRINT:
+			case TOKEN_RETURN:
+				return;
+			default:
+				return;
+		}
+
+		advance();
+	}
 }
 
 static void unary(){
@@ -193,6 +237,20 @@ static void literal(){
 
 static void string(){
 	emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length-2)));
+}
+
+static void statement(){
+	if (match(TOKEN_PRINT)){
+		printStatement();
+	}else {
+		expressionStatement();
+	}
+}
+
+static void declaration(){
+	statement();
+
+	if (parser.panicMode) synchronize();
 }
 
 
@@ -264,6 +322,7 @@ static void parsePrecedence(Precedence precedence){
 	}
 }
 
+
 bool compile(const char *source, Chunk* chunk){
 	initScanner(source);
 	compilingChunk = chunk;
@@ -272,8 +331,9 @@ bool compile(const char *source, Chunk* chunk){
 	parser.panicMode = false;
 
 	advance();
-	expression();
-	consume(TOKEN_EOF, "Expect end of expression.");
+	while(!match(TOKEN_EOF)){
+		declaration();
+	}
 	endCompiler();
 	return !parser.hadError;
 }

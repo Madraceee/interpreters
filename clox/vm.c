@@ -108,9 +108,12 @@ static InterpretResult run(){
 		uint8_t instruction;
 		switch (instruction = READ_BYTE()){
 			case OP_RETURN: {
+				return INTERPRET_OK;
+			}
+			case OP_PRINT: {
 				printValue(pop());
 				printf("\n");
-				return INTERPRET_OK;
+				break;
 			}
 			case OP_NOT: 
 				push(BOOL_VAL(isFalsey(pop())));
@@ -141,6 +144,7 @@ static InterpretResult run(){
 			case OP_LESS: BINARY_OP(BOOL_VAL, <); break;
 			case OP_ADD: {
 				if (IS_STRING(peek(0)) && IS_STRING(peek(1))){
+					concatenate();
 				}else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))){
 					double b = AS_NUMBER(pop());
 					double a = AS_NUMBER(pop());
@@ -154,6 +158,7 @@ static InterpretResult run(){
 			case OP_SUBTRACT: BINARY_OP(NUMBER_VAL,-); break;
 			case OP_MULTIPLY: BINARY_OP(NUMBER_VAL,*); break;
 			case OP_DIVIDE: BINARY_OP(NUMBER_VAL,/); break;
+			case OP_POP: pop(); break;
 		}
 	}
 
