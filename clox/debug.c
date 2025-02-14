@@ -3,6 +3,7 @@
 
 #include "debug.h"
 #include "chunk.h"
+#include "object.h"
 #include "value.h"
 
 // Used to print the contents of chunk which has bytecode
@@ -25,6 +26,7 @@ void printValue(Value value){
 			break;
 		case VAL_NIL: printf("nil"); break;
 		case VAL_NUMBER: printf("%g", AS_NUMBER(value)); break;
+		case VAL_OBJ: printObject(value); break;
 	}
 }
 
