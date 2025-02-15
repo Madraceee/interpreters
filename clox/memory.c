@@ -30,7 +30,7 @@ void freeObjects(){
 	Obj* object = vm.objects;
 	while (object != NULL){
 		Obj* next = object->next;
-		freeObjects();
+		freeObject(object);
 		object = next;
 	}
 }

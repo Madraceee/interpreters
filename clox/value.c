@@ -1,6 +1,7 @@
 #include "value.h"
 #include "memory.h"
 #include "object.h"
+#include <stdio.h>
 #include <string.h>
 
 
@@ -23,7 +24,8 @@ void writeValueArray(ValueArray *array, Value value){
 
 void freeValueArray(ValueArray *array){
 	FREE_ARRAY(Value, array->values, array->capacity);
-	initValueArray(array);
+	printf("HERE\n");
+	/*initValueArray(array);*/
 }
 
 bool valuesEqual(Value a, Value b){

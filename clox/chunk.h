@@ -21,6 +21,8 @@ typedef enum{
 	OP_NOT,
 	OP_PRINT,
 	OP_POP,
+	OP_DEFINE_GLOBAL,
+	OP_GET_GLOBAL,
 }OpCode;
 
 // Chunk Used to store instrcutions as bytecode

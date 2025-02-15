@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -31,7 +32,7 @@ static Entry* findEntry(Entry *entries, int capacity, ObjString* key){
 			}else {
 				if (tombstone == NULL) tombstone = entry;
 			}
-		}else if(entry->key == key){
+		}else if(entry->key->hash == key->hash){
 			return entry;
 		}
 

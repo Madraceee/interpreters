@@ -43,6 +43,7 @@ static bool isFalsey(Value value) {
 
 void initVM(){
 	resetStack();
+	initTable(&vm.globals);
 	initTable(&vm.strings);
 	vm.objects = NULL;
 }
@@ -59,6 +60,7 @@ Value pop(){
 
 
 void freeVM(){
+	freeTable(&vm.globals);
 	freeTable(&vm.strings);
 	freeObjects();
 }
@@ -81,6 +83,7 @@ static void concatenate(){
 static InterpretResult run(){
 	#define READ_BYTE() (*vm.ip++)
 	#define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
+	#define READ_STRING() AS_STRING(READ_CONSTANT())
 	#define BINARY_OP(valueType,op) \
 		do { \
 			if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
@@ -102,7 +105,7 @@ static InterpretResult run(){
 			printf("]");
 		}
 		printf("\n");
-		disassembleInstruction(vm.chunk,(int)(vm.ip - vm.chunk->code)
+		disassembleInstruction(vm.chunk,(int)(vm.ip - vm.chunk->code));
 	#endif
 
 		uint8_t instruction;
@@ -159,11 +162,28 @@ static InterpretResult run(){
 			case OP_MULTIPLY: BINARY_OP(NUMBER_VAL,*); break;
 			case OP_DIVIDE: BINARY_OP(NUMBER_VAL,/); break;
 			case OP_POP: pop(); break;
+			case OP_DEFINE_GLOBAL: {
+				ObjString* name = READ_STRING();
+				tableSet(&vm.globals, name, peek(0));
+				pop();
+				break;
+			}
+			case OP_GET_GLOBAL:{
+				ObjString* name = READ_STRING();
+				Value value;
+				if(!tableGet(&vm.globals, name, &value)){
+					runtimeError("Undefined variable '%s'.",name->chars);
+					return INTERPRET_RUNTIME_ERROR;
+				}
+				push(value);
+				break;
+			}
 		}
 	}
 
 	#undef READ_BYTE
 	#undef READ_CONSTANT
+	#undef READ_STRING
 	#undef BINARY_OP
 }
 
@@ -178,6 +198,14 @@ InterpretResult interpret(const char* source){
 
 	vm.chunk = &chunk;
 	vm.ip = vm.chunk->code;
+
+
+	/*for (int i=0;i<chunk.constants.capacity;i++){*/
+	/*	Value value = chunk.constants.values[i];*/
+	/*	if (IS_OBJ(value)) printf("Object - %s\n", ((ObjString*)value.as.obj)->chars);*/
+	/*	if (IS_NUMBER(value)) printf("Number - %f\n", value.as.number);*/
+	/*	if (IS_BOOL(value)) printf("Boolean - %d\n", value.as.boolean);*/
+	/*}*/
 
 	InterpretResult result = run();
 	freeChunk(&chunk);
