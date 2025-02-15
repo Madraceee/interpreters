@@ -24,8 +24,7 @@ void writeValueArray(ValueArray *array, Value value){
 
 void freeValueArray(ValueArray *array){
 	FREE_ARRAY(Value, array->values, array->capacity);
-	printf("HERE\n");
-	/*initValueArray(array);*/
+	initValueArray(array);
 }
 
 bool valuesEqual(Value a, Value b){
