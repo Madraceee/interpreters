@@ -1,6 +1,5 @@
 #include "value.h"
 #include "memory.h"
-#include "object.h"
 #include <stdio.h>
 #include <string.h>
 
