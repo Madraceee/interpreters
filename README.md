@@ -2,8 +2,8 @@
 
 Built 2 interpreter for the Language [Lox](https://craftinginterpreters.com/the-lox-language.html) based on the book "Crafting Interpreter".
 
-Golang Interpreter is a AST interpreter. Given code, an AST(Abstract Syntax Tree) is built and executed.
-C Interpreter is a byte code interpreter with its own VM. Given code, it is converted into bytecode and then executed.
+(Glox)Golang Interpreter is a AST interpreter. Given code, an AST(Abstract Syntax Tree) is built and executed.
+(Clox)C Interpreter is a byte code interpreter with its own VM. Given code, it is converted into bytecode and then executed.
 
 Both are under construction.
 This project is used for learning purpose.
